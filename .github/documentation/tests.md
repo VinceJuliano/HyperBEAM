@@ -1,4 +1,4 @@
-# CD
+# Tests
 
 ## Table of Contents
 - [Description](#description)
