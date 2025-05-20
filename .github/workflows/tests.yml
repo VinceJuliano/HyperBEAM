@@ -10,7 +10,9 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted
+    env:
+      ImageOS: ubuntu22
     name: Install Deps and Run Tests
     strategy:
       matrix:
@@ -40,9 +42,9 @@ jobs:
         run: |
           # Determine whether we're in a PR or a push to main
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            TEXT=":x: HyperBEAM tests failed PR #${PR_NUMBER}: ${PR_TITLE}"
+            TEXT=":x: HyperBEAM tests failed PR #${PR_NUMBER} ${PR_TITLE}: "
           else
-            TEXT=":x: HyperBEAM tests failed on main"
+            TEXT=":x: HyperBEAM tests failed on main: "
           fi
 
           # Post to Slack
