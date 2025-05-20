@@ -32,7 +32,7 @@ jobs:
         run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
 
       - name: Run EUnit
-        run: rebar3 eunit
+        run: . "$HOME/.cargo/env" && rebar3 eunit
 
       - name: Notify Slack on Failure
         if: failure()
