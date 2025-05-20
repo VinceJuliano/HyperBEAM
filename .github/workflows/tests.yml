@@ -1,4 +1,4 @@
-name: Run HyperBEAM Tests, pre built action
+name: Run hb tests
 
 on:
   workflow_dispatch:
