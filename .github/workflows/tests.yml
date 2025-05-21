@@ -57,7 +57,7 @@ jobs:
           for file in $files; do
             module=$(basename "$file" .erl)
             echo "=== Testing module: $module ==="
-            rebar3 eunit --module "$module"
+            rebar3 eunit --module $module
           done
 
       - name: Notify Slack on Failure
