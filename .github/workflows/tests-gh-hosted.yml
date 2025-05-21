@@ -45,7 +45,10 @@ jobs:
             echo "$output"
 
             # 1) Look for a summary line: “Failed: X.  Skipped: Y.  Passed: Z.”
-            if summary=$(echo "$output" | grep -E 'Failed: [0-9]+\. *Skipped: [0-9]+\. *Passed: [0-9]+\.'); then
+            pattern='Failed: [0-9]+\.\s*Skipped: [0-9]+\.\s*Passed: [0-9]+\.' 
+            if summary=$(
+              grep -E "$pattern" <<< "$output"
+            ); then
               n=$(echo "$summary" | sed -n 's/.*Passed: \([0-9]\+\)\..*/\1/p')
             # 2) Or if it's all-pass: “All N tests passed.”
             elif echo "$output" | grep -qE 'All [0-9]+ tests passed\.'; then
@@ -81,17 +84,20 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-          PR_NUMBER:       ${{ github.event.pull_request.number }}
-          PR_TITLE:        ${{ github.event.pull_request.title }}
-          RUN_URL:         ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          FAILED_LIST:     ${{ steps.run_eunit.outputs.failed }}
-          PASSED_COUNT:    ${{ steps.run_eunit.outputs.passed }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          FAILED_LIST: ${{ steps.run_eunit.outputs.failed }}
+          PASSED_COUNT: ${{ steps.run_eunit.outputs.passed }}
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            TEXT="HyperBEAM tests failed on PR #${PR_NUMBER} ${PR_TITLE}. ❌ Failed modules: ${FAILED_LIST}. ✅ ${PASSED_COUNT} passed. "
+            TEXT="HyperBEAM tests failed on PR #${PR_NUMBER} ${PR_TITLE}. "
           else
-            TEXT="HyperBEAM tests failed on main. ❌ Failed modules: ${FAILED_LIST}. ✅ ${PASSED_COUNT} passed. "
+            TEXT="HyperBEAM tests failed on main. "
           fi
+
+          # append without spaces around =
+          TEXT="$TEXT❌ Failed modules: ${FAILED_LIST}. ✅ ${PASSED_COUNT} passed."
 
           curl -X POST https://slack.com/api/chat.postMessage \
             -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
