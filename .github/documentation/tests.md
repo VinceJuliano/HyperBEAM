@@ -2,57 +2,25 @@
 
 ## Table of Contents
 - [Description](#description)
-- [Variables](#variables)
 - [Jobs](#jobs)
 - [Credentials](#credentials)
-- [Test Runner](#runner)
 
 ### Description 
-This workflow is triggered when a pull request is opened on the HyperBEAM main branch. It is responsible for installing and running the HyperBEAM rebar3 eunit tests.
-
-### Variables
-
-The following variables are defined by the workflow:
+This workflow is triggered when a pull request is opened on the HyperBEAM main branch. Or manually via the Github Actions UI. It is responsible for installing and running the HyperBEAM rebar3 eunit tests.
 
 ### Jobs
 
 The workflow consists of 1 main job:
 
 1. **test**: 
-
+    - Utilizes actions/checkout@v4 and erlef/setup-beam@v1 to create the Erlang ready environment in the github test runner.
+    - Iterates over each erlang module in Hyperbeam, running `rebar3 eunit --module modulename` on each, aggregating the results and successes.
+    - Generates and sends a Slack message if any tests failed, containing number of successes, and each module that failed.
 
 ### Credentials
 
-### Runner
+There are 2 credentials used by this action, both stored in Github secrets. Settings -> Secrets and variables -> Actions. 
 
-This workflow uses a self hosted github test runner to create the github test runner follow the below steps - 
+`SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`
 
-1. Create an Ubuntu 22.04 instance, shut down root login, create a sudo user, and login as the new user
-
-Create a new linux user
-```
-useradd -m -s /bin/bash youruser
-passwd youruser
-usermod -aG sudo youruser
-echo 'youruser ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/youruser
-sudo chmod 440 /etc/sudoers.d/youruser
-youruser ALL=(ALL) NOPASSWD:ALL
-```
-
-2. In Settings -> Actions -> Runners on this repo, create a runner called self-hosted. Run these commands on it with the correct token for your runner
-
-```
-mkdir actions-runner && cd actions-runner
-
-curl -o actions-runner-linux-x64-2.324.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.324.0/actions-runner-linux-x64-2.324.0.tar.gz
-
-echo "e8e24a3477da17040b4d6fa6d34c6ecb9a2879e800aa532518ec21e49e21d7b4  actions-runner-linux-x64-2.324.0.tar.gz" | shasum -a 256 -c
-
-tar xzf ./actions-runner-linux-x64-2.324.0.tar.gz
-
-./config.sh --url https://github.com/VinceJuliano/HyperBEAM --token <your runner token>
-
-sudo ./svc.sh install
-
-sudo ./svc.sh start
-```
+Generate the token in Slack, and grab the channel ID you want to send to and the action will work.
