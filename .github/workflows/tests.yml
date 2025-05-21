@@ -28,11 +28,29 @@ jobs:
           otp-version: ${{ matrix.otp }}
           rebar3-version: ${{ matrix.rebar3 }}
 
+      - name: Install system dependencies
+        run: |
+          apt-get update \
+            && apt-get install -y --no-install-recommends \
+              git \
+              build-essential \
+              cmake \
+              pkg-config \
+              ncurses-dev \
+              libssl-dev \
+              curl \
+              ca-certificates \
+            && rm -rf /var/lib/apt/lists/*
+
+
       - name: Install cargo
-        run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rustup-init.sh
+          sh rustup-init.sh -y --default-toolchain stable
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Run EUnit
-        run: . "$HOME/.cargo/env" && rebar3 eunit
+        run: rebar3 eunit
 
       - name: Notify Slack on Failure
         if: failure()
