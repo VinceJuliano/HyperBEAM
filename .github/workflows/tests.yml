@@ -110,9 +110,9 @@ jobs:
           PASSED_COUNT:    ${{ steps.run_eunit.outputs.passed }}
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            TEXT=":x: HyperBEAM tests failed on PR #${PR_NUMBER} ${PR_TITLE}. ✅ ${PASSED_COUNT} passed. ❌ Failed modules: ${FAILED_LIST} "
+            TEXT="HyperBEAM tests failed on PR #${PR_NUMBER} ${PR_TITLE}. ✅ ${PASSED_COUNT} passed. ❌ Failed modules: ${FAILED_LIST} "
           else
-            TEXT=":x: HyperBEAM tests failed on main. ✅ ${PASSED_COUNT} passed. ❌ Failed modules: ${FAILED_LIST} "
+            TEXT="HyperBEAM tests failed on main. ✅ ${PASSED_COUNT} passed. ❌ Failed modules: ${FAILED_LIST} "
           fi
 
           curl -X POST https://slack.com/api/chat.postMessage \
