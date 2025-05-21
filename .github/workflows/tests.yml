@@ -56,7 +56,7 @@ jobs:
           while IFS= read -r -d '' file; do
             module=$(basename "$file" .erl)
             echo "=== Testing module: $module ==="
-            rebar3 eunit --module "$module"
+            rebar3 eunit --module $module
           done
 
       - name: Notify Slack on Failure
