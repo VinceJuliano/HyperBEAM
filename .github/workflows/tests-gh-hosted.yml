@@ -11,8 +11,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
-    env:
-      ImageOS: ubuntu22
     name: Install Deps and Run Tests
     strategy:
       matrix:
