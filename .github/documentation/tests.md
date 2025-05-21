@@ -31,6 +31,10 @@ This workflow uses a self hosted github test runner to create the github test ru
 2. In Settings -> Actions -> Runners on this repo, create a runner called self-hosted. Run these commands on it with the correct token for your runner
 
 ```
+echo 'youruser ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/youruser
+sudo chmod 440 /etc/sudoers.d/youruser
+youruser ALL=(ALL) NOPASSWD:ALL
+
 mkdir actions-runner && cd actions-runner
 
 curl -o actions-runner-linux-x64-2.324.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.324.0/actions-runner-linux-x64-2.324.0.tar.gz

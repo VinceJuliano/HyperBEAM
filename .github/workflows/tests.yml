@@ -30,8 +30,8 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          apt-get update \
-            && apt-get install -y --no-install-recommends \
+          sudo apt-get update \
+            && sudo apt-get install -y --no-install-recommends \
               git \
               build-essential \
               cmake \
@@ -40,7 +40,7 @@ jobs:
               libssl-dev \
               curl \
               ca-certificates \
-            && rm -rf /var/lib/apt/lists/*
+            && sudo rm -rf /var/lib/apt/lists/*
 
 
       - name: Install cargo
