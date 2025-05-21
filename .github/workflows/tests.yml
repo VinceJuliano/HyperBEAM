@@ -50,7 +50,14 @@ jobs:
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Run EUnit
-        run: rebar3 eunit --module dev_lua
+        run: |
+          # find all .erl files under src/, handle filenames with spaces safely
+          find src -type f -name "*.erl" -print0 | \
+          while IFS= read -r -d '' file; do
+            module=$(basename "$file" .erl)
+            echo "=== Testing module: $module ==="
+            rebar3 eunit --module "$module"
+          done
 
       - name: Notify Slack on Failure
         if: failure()
