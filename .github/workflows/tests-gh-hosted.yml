@@ -1,4 +1,4 @@
-name: Run hb tests, gh hosted
+name: Run hb tests
 
 on:
   workflow_dispatch:
