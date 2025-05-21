@@ -42,7 +42,6 @@ jobs:
               ca-certificates \
             && sudo rm -rf /var/lib/apt/lists/*
 
-
       - name: Install cargo
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rustup-init.sh
