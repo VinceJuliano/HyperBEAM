@@ -48,34 +48,55 @@ jobs:
           sh rustup-init.sh -y --default-toolchain stable
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - id: run_eunit
-        name: Run EUnit
-        shell: bash
-        run: |
-          # turn off “exit on first error” so we can collect them
-          set +e
+        - id: run_eunit
+          name: Run EUnit
+          shell: bash
+          run: |
+            set +e                      
 
-          failed=()
+            failed=()
+            passed=0
 
-          for file in $(find src -type f -name '*.erl'); do
-            module=$(basename "$file" .erl)
-            echo "=== Testing module: $module ==="
-            rebar3 eunit --module "$module"
-            if [ $? -ne 0 ]; then
-              failed+=("$module")
-            fi
-          done
+            for file in $(find src -type f -name '*.erl'); do
+              module=$(basename "$file" .erl)
+              echo "=== Testing module: $module ==="
 
-          if [ ${#failed[@]} -gt 0 ]; then
-            # join on commas (or spaces) and export as a step output
-            IFS=',' read -r -a _ <<< "${failed[*]}"
+              # Capture output & exit code
+              output=$(rebar3 eunit --module $module 2>&1)
+              ret=$?
+              echo "$output"
+
+              # 1) Look for a summary line: “Failed: X.  Skipped: Y.  Passed: Z.”
+              if summary=$(echo "$output" | grep -E 'Failed: [0-9]+\. *Skipped: [0-9]+\. *Passed: [0-9]+\.'); then
+                n=$(echo "$summary" | sed -n 's/.*Passed: \([0-9]\+\)\..*/\1/p')
+              # 2) Or if it's all-pass: “All N tests passed.”
+              elif echo "$output" | grep -qE 'All [0-9]+ tests passed\.'; then
+                n=$(echo "$output" | grep -oE 'All [0-9]+' | head -1 | awk '{print $2}')
+              # 3) Fallback: count lines ending in “ok”
+              else
+                n=$(echo "$output" | grep -cE '\.\.\.(\[[0-9. ]+ s\] )?ok$')
+              fi
+
+              passed=$((passed + n))
+
+              if [ $ret -ne 0 ]; then
+                failed+=("$module")
+              fi
+            done
+
+            # Export for downstream steps
             echo "failed=${failed[*]}" >> $GITHUB_OUTPUT
-            # print a summary so you still see it in the job log
+            echo "passed=${passed}"   >> $GITHUB_OUTPUT
+
+            # Print a summary in the log
             echo
-            echo "❌  The following modules failed their EUnit tests:"
-            printf "    • %s\n" "${failed[@]}"
-            exit 1
-          fi
+            echo "✅ Total passed tests: $passed"
+            if [ ${#failed[@]} -gt 0 ]; then
+              echo
+              echo "❌ Failed modules: ${failed[*]}"
+              exit 1
+            fi
+
 
       - name: Notify Slack on Failure
         if: failure()
@@ -86,16 +107,18 @@ jobs:
           PR_TITLE:        ${{ github.event.pull_request.title }}
           RUN_URL:         ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           FAILED_LIST:     ${{ steps.run_eunit.outputs.failed }}
+          PASSED_COUNT:    ${{ steps.run_eunit.outputs.passed }}
         run: |
           if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
-            TEXT=":x: HyperBEAM tests failed on PR #${PR_NUMBER} ${PR_TITLE}. Failed modules: ${FAILED_LIST}"
+            TEXT=":x: HyperBEAM tests failed on PR #${PR_NUMBER} ${PR_TITLE}. ✅ ${PASSED_COUNT} passed. ❌ Failed modules: ${FAILED_LIST} "
           else
-            TEXT=":x: HyperBEAM tests failed on main. Failed modules: ${FAILED_LIST}"
+            TEXT=":x: HyperBEAM tests failed on main. ✅ ${PASSED_COUNT} passed. ❌ Failed modules: ${FAILED_LIST} "
           fi
 
           curl -X POST https://slack.com/api/chat.postMessage \
             -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
             -d "channel=$SLACK_CHANNEL_ID" \
             -d "text=${TEXT} <${RUN_URL}|View test output>"
+
 
 
