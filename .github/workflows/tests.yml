@@ -27,13 +27,15 @@ jobs:
           rebar3-version: ${{ matrix.rebar3 }}
 
       - name: Run EUnit
+        shell: bash
         run: |
-          # find all .erl files under src/, handle filenames with spaces safely
-          find src -type f -name "*.erl" -print0 | \
-          while IFS= read -r -d '' file; do
+          # build a list (whitespace-safe if your paths don't contain spaces)
+          files=$(find src -type f -name '*.erl')
+
+          for file in $files; do
             module=$(basename "$file" .erl)
             echo "=== Testing module: $module ==="
-            rebar3 eunit --module $module
+            rebar3 eunit --module "$module"
           done
 
       - name: Notify Slack on Failure
