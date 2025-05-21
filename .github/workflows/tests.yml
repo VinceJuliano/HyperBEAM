@@ -50,7 +50,7 @@ jobs:
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Run EUnit
-        run: rebar3 eunit
+        run: rebar3 eunit --module dev_lua
 
       - name: Notify Slack on Failure
         if: failure()

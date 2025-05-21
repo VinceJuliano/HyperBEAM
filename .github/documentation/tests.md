@@ -28,13 +28,20 @@ The workflow consists of 1 main job:
 This workflow uses a self hosted github test runner to create the github test runner follow the below steps - 
 
 1. Create an Ubuntu 22.04 instance, shut down root login, create a sudo user, and login as the new user
-2. In Settings -> Actions -> Runners on this repo, create a runner called self-hosted. Run these commands on it with the correct token for your runner
 
+Create a new linux user
 ```
+useradd -m -s /bin/bash youruser
+passwd youruser
+usermod -aG sudo youruser
 echo 'youruser ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/youruser
 sudo chmod 440 /etc/sudoers.d/youruser
 youruser ALL=(ALL) NOPASSWD:ALL
+```
 
+2. In Settings -> Actions -> Runners on this repo, create a runner called self-hosted. Run these commands on it with the correct token for your runner
+
+```
 mkdir actions-runner && cd actions-runner
 
 curl -o actions-runner-linux-x64-2.324.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.324.0/actions-runner-linux-x64-2.324.0.tar.gz
