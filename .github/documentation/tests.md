@@ -23,4 +23,4 @@ There are 2 credentials used by this action, both stored in Github secrets. Sett
 
 `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`
 
-Generate the token in Slack, and grab the channel ID you want to send to and the action will work.
+Generate the token in Slack, and grab the channel ID you want to send to, add those to the actions secrets in Github, and the action will work.
